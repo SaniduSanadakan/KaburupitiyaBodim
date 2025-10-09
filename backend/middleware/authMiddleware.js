@@ -5,9 +5,15 @@ const userService = require('../services/userService');
 
 const protect = async (req, res, next) => {
     try {
-        // 1) Get token from header
+        // 1) Get token from cookie or header
         let token;
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        
+        // Check for token in cookies first
+        if (req.cookies && req.cookies.jwt) {
+            token = req.cookies.jwt;
+        } 
+        // Fall back to Authorization header
+        else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }
 
@@ -15,8 +21,8 @@ const protect = async (req, res, next) => {
             return next(new AppError('You are not logged in. Please log in to get access.', 401));
         }
 
-        // 2) Verify token
-        const decoded = jwt.verify(token, config.jwtSecret);
+        // 2) Verify token using the same secret as in User model
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || '1234');
 
         // 3) Check if user still exists
         const user = await userService.getUserById(decoded.id);
@@ -28,7 +34,7 @@ const protect = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        next(new AppError('Not authorized', 401));
+        next(new AppError(error, 401));
     }
 };
 

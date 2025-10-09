@@ -7,10 +7,8 @@ const config = {
     
     // JWT configuration (for future use)
     jwtSecret: process.env.JWT_SECRET || 'your-default-jwt-secret',
-    jwtExpiration: '24h',
+    jwtExpiration: process.env.JWT_EXPIRATION || '1h',
     
-    // API configuration
-    apiPrefix: '/api'
 };
 
 module.exports = config;
