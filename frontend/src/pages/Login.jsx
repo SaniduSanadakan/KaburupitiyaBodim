@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import Loading from '../components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,11 +25,7 @@ export default function Login() {
   }, [isAuthenticated, navigate]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <Loading fullScreen={true} text="Loading..." />;
   }
 
   const handleSubmit = async (e) => {
@@ -114,12 +111,17 @@ export default function Login() {
                 </button>
               </div>
             </div>
+            <Button 
+            type="submit" 
+            className="w-full mt-4"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Logging in...' : 'Login'}
+          </Button>
           </CardContent>
+          
           <CardFooter className="px-6 pb-6 pt-0 mt-4">
             <div className="w-full space-y-4">
-              <Button type="submit" className="w-full h-11 text-base hover:bg-orange-600" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </Button>
               <div className="text-sm text-center text-muted-foreground">
                 Don't have an account?{' '}
                 <a href="#" className="font-medium text-primary hover:underline">
