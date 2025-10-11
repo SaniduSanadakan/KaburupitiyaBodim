@@ -1,11 +1,11 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { getUser } from "../services/authService";
 import Loading from "../components/common/Loading";
+import { getAllUsers } from "../services/authService";
 
 export default function Dashboard() {
-    const { logout } = useContext(AuthContext);
+    const { logout,user } = useContext(AuthContext);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [userData, setUserData] = useState(null);
@@ -24,8 +24,7 @@ export default function Dashboard() {
     const handleGetUser = async () => {
         try {
             setIsLoading(true);
-            const response = await getUser();
-            setUserData(response);
+            setUserData(await getAllUsers());
         } catch (error) {
             console.error('Get user failed:', error);
         } finally {

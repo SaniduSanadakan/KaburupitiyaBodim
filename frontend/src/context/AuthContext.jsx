@@ -8,9 +8,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userLoaded, setUserLoaded] = useState(false);
 
   // Load user info when component mounts
   const loadUser = useCallback(async () => {
+    // Skip if we've already loaded the user
+    if (userLoaded) return user;
+    
+    // Check for token in localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      setUserLoaded(true);
+      return null;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -22,15 +34,23 @@ export const AuthProvider = ({ children }) => {
       console.error('Error fetching user:', err);
       setError(err.message || 'Failed to load user data');
       setUser(null);
-      throw err;
+      // Don't throw error here to prevent uncaught promise rejections
+      return null;
     } finally {
       setLoading(false);
+      setUserLoaded(true);
     }
-  }, []);
+  }, [userLoaded]);
 
-  // Initial user load
+  // Initial user load - only if there's a token
   useEffect(() => {
-    loadUser();
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadUser();
+    } else {
+      setLoading(false);
+      setUserLoaded(true);
+    }
   }, [loadUser]);
 
   // Login function
@@ -41,6 +61,7 @@ export const AuthProvider = ({ children }) => {
       const response = await loginUser(credentials);
       const userData = response.user || response.data?.user || response;
       setUser(userData);
+      localStorage.setItem('token', response.token);
       return userData;
     } catch (err) {
       setError(err.message || 'Login failed');
@@ -56,6 +77,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await logOutUser();
       setUser(null);
+      localStorage.removeItem('token');
     } catch (err) {
       console.error('Logout error:', err);
       setError(err.message || 'Logout failed');

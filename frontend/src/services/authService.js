@@ -15,3 +15,14 @@ export const getUser = async () => {
     const { data } = await api.get("/auth/me");
     return data;
   };
+
+export const getAllUsers = async () => {
+    try {
+      const { data } = await api.get("/auth/users");
+    return data;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return error;
+    }
+}
+    
