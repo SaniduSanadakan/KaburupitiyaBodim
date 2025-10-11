@@ -1,4 +1,4 @@
-import api from "./api2"
+import api from "./api"
 
 // Login user
 export const loginUser = async (credentials) => {
