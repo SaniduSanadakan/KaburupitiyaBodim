@@ -21,8 +21,10 @@ export const getAllUsers = async () => {
       const { data } = await api.get("/auth/users");
     return data;
     } catch (error) {
-      console.error("Error fetching users:", error);
-      return error;
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return { error: true, message: "Failed to fetch users" };
     }
 }
     
