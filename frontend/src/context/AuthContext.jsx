@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userLoaded, setUserLoaded] = useState(false);
+  const [role, setRole] = useState(null);
 
   // Load user info when component mounts
   const loadUser = useCallback(async () => {
@@ -20,6 +21,8 @@ export const AuthProvider = ({ children }) => {
     if (!token) {
       setLoading(false);
       setUserLoaded(true);
+      setUser(null);
+      setRole(null);
       return null;
     }
 
@@ -29,18 +32,20 @@ export const AuthProvider = ({ children }) => {
       const response = await getUser();
       const userData = response.user || response.data?.user || response;
       setUser(userData);
+      setRole(userData.role || null);
       return userData;
     } catch (err) {
       console.error('Error fetching user:', err);
       setError(err.message || 'Failed to load user data');
       setUser(null);
-      // Don't throw error here to prevent uncaught promise rejections
+      setRole(null);
+      localStorage.removeItem('token');
       return null;
     } finally {
       setLoading(false);
       setUserLoaded(true);
     }
-  }, [userLoaded]);
+  }, [userLoaded, user]);
 
   // Initial user load - only if there's a token
   useEffect(() => {
@@ -61,10 +66,13 @@ export const AuthProvider = ({ children }) => {
       const response = await loginUser(credentials);
       const userData = response.user || response.data?.user || response;
       setUser(userData);
+      setRole(userData.role || null); // Explicitly set the role from user data
       localStorage.setItem('token', response.token);
       return userData;
     } catch (err) {
       setError(err.message || 'Login failed');
+      setUser(null);
+      setRole(null);
       throw err;
     } finally {
       setLoading(false);
@@ -77,6 +85,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await logOutUser();
       setUser(null);
+      setRole(null);
       localStorage.removeItem('token');
     } catch (err) {
       console.error('Logout error:', err);
@@ -99,6 +108,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       loadUser,
       error,
+      role,
       isAuthenticated: !!user,
       loading 
     }}>
