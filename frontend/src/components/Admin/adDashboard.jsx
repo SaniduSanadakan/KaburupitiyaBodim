@@ -5,6 +5,7 @@ import { getAllUsers } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import UsersTable from "./components/Users/UsersTable";
 import LogoutButton from "./components/common/LogoutButton";
+import AddUserDialog from "./components/Users/AddUserDialog";
 
 export default function AdminDashboard() {
     const { logout } = useContext(AuthContext);
@@ -45,9 +46,10 @@ export default function AdminDashboard() {
         }
     };
 
-    // if (isLoading) {
-    //     return <Loading fullScreen={true} text="Processing..." />;
-    // }
+    // Handle user added event
+    const handleUserAdded = () => {
+        handleGetUser(); // Refresh the users list
+    };
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
@@ -63,12 +65,16 @@ export default function AdminDashboard() {
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-semibold">Users</h2>
-                        <Button 
-                            onClick={handleGetUser} 
-                            disabled={isFetchingUsers}
-                        >
-                            {isFetchingUsers ? 'Refreshing...' : 'Refresh Users'}
-                        </Button>
+                        <div className="flex space-x-2">
+                            <Button 
+                                variant="outline"
+                                onClick={handleGetUser} 
+                                disabled={isFetchingUsers}
+                            >
+                                {isFetchingUsers ? 'Refreshing...' : 'Refresh'}
+                            </Button>
+                            <AddUserDialog onUserAdded={handleGetUser} />
+                        </div>
                     </div>
 
                     {error && (

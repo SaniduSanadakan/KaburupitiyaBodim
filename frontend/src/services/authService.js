@@ -27,4 +27,16 @@ export const getAllUsers = async () => {
       return { error: true, message: "Failed to fetch users" };
     }
 }
+
+export const createUser = async (user) => {
+    try {
+        const { data } = await api.post("/auth/register", user);
+        return data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            return error.response.data;
+        }
+        return { error: true, message: "Failed to create user" };
+    }
+}
     
