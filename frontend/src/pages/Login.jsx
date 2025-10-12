@@ -13,8 +13,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { login, isAuthenticated, loading } = useContext(AuthContext);
+  //const [error, setError] = useState('');
+  const { login, isAuthenticated, loading, error } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -30,7 +30,6 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
     
     try {
@@ -38,7 +37,7 @@ export default function Login() {
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message || 'An error occurred during login. Please try again.');
+      //setError(error.message || 'An error occurred during login. Please try again.');
     } finally {
       setIsLoading(false);
     }

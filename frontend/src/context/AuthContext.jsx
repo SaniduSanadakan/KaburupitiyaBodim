@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', response.token);
       return userData;
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(err.response.data.message || 'Login failed');
       setUser(null);
       setRole(null);
       throw err;
