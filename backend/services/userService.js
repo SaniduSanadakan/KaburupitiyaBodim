@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const AppError = require('../middleware/errorMiddleware').AppError;
+const jwt = require('jsonwebtoken');
 
 class UserService {
     // Create a new user
@@ -66,6 +68,25 @@ class UserService {
         }
     }
 
+    // Login user
+    async login(email, password) {
+
+        // Check if user exists && password is correct
+        const user = await User.findOne({ email }).select('+password');
+        
+        if (!user || !(await user.correctPassword(password, user.password))) {
+            throw new AppError('Incorrect email or password', 401);
+        }
+
+        // If everything ok, generate token
+        const token = user.generateAuthToken();
+
+        // Remove password from output
+        user.password = undefined;
+
+        return { user, token };
+    }
+
     // Find user by email
     async getUserByEmail(email) {
         try {
@@ -113,6 +134,28 @@ class UserService {
     isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
+    }
+
+    // User login
+    async loginUser(credentials) {
+        try {
+            const { email, password } = credentials;
+            const user = await this.getUserByEmail(email);
+            if (!user) {
+                throw new Error('Invalid email or password');
+            }
+
+            const isMatch = await user.comparePassword(password);
+            if (!isMatch) {
+                throw new Error('Invalid password');
+            }
+
+            // Generate JWT token
+            const token = user.generateAuthToken();
+            return token;
+        } catch (error) {
+            throw new Error(`Login failed: ${error.message}`);
+        }
     }
 }
 
