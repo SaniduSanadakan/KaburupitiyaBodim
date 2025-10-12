@@ -1,14 +1,23 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
-import Loading from "../common/Loading";
-import { getAllUsers } from "../../services/authService";
+import { AuthContext } from "@/context/AuthContext";
+import { getAllUsers } from "@/services/authService";
+import { Button } from "@/components/ui/button";
+import UsersTable from "./components/Users/UsersTable";
+import LogoutButton from "./components/common/LogoutButton";
 
 export default function AdminDashboard() {
-    const { logout,user } = useContext(AuthContext);
+    const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
-    const [userData, setUserData] = useState(null);
+    const [isFetchingUsers, setIsFetchingUsers] = useState(false);
+    const [userData, setUserData] = useState([]);
+    const [error, setError] = useState(null);
+
+    // Fetch users on component mount
+    useEffect(() => {
+        handleGetUser();
+    }, []);
 
     const handleLogOut = async () => {
         try {
@@ -21,51 +30,60 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleGetUser = async () => {
+    const handleGetUser = async (e) => {
+        e?.preventDefault();
         try {
-            setIsLoading(true);
-            setUserData(await getAllUsers());
+            setIsFetchingUsers(true);
+            setError(null);
+            const data = await getAllUsers();
+            setUserData(data || []);
         } catch (error) {
-            console.error('Get user failed:', error);
+            console.error('Get users failed:', error);
+            setError('Failed to fetch users. Please try again.');
         } finally {
-            setIsLoading(false);
+            setIsFetchingUsers(false);
         }
     };
 
-    if (isLoading) {
-        return <Loading fullScreen={true} text="Processing..." />;
-    }
+    // if (isLoading) {
+    //     return <Loading fullScreen={true} text="Processing..." />;
+    // }
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-            
-            <div className="space-y-4">
-                <div className="flex space-x-4">
-                    <button 
-                        onClick={handleLogOut} 
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors"
-                        disabled={isLoading}
-                    >
-                        Log Out
-                    </button>
-                    <button 
-                        onClick={handleGetUser} 
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors"
-                        disabled={isLoading}
-                    >
-                        Get User
-                    </button>
-                </div>
+        <div className="p-6 max-w-6xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                <LogoutButton 
+                    onLogout={handleLogOut} 
+                    isLoading={isLoading} 
+                />
+            </div>
 
-                {userData && (
-                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <h2 className="text-lg font-semibold mb-2">User Information</h2>
-                        <pre className="text-sm bg-white p-3 rounded overflow-auto">
-                            {JSON.stringify(userData, null, 2)}
-                        </pre>
+            <div className="bg-white rounded-lg border shadow-sm">
+                <div className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold">Users</h2>
+                        <Button 
+                            onClick={handleGetUser} 
+                            disabled={isFetchingUsers}
+                        >
+                            {isFetchingUsers ? 'Refreshing...' : 'Refresh Users'}
+                        </Button>
                     </div>
-                )}
+
+                    {error && (
+                        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+                            {error}
+                        </div>
+                    )}
+
+                    <UsersTable 
+                        users={userData} 
+                        isLoading={isFetchingUsers}
+                        onRefresh={handleGetUser}
+                        isRefreshing={isFetchingUsers}
+                    />
+                </div>
             </div>
         </div>
     );
