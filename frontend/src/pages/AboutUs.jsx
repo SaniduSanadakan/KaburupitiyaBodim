@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Loading from '../components/common/Loading';
+import Navigation from '../components/Navigation';
 
 export default function AboutUs() {
     const [isLoading, setIsLoading] = useState(true);
@@ -30,12 +31,12 @@ export default function AboutUs() {
         fetchTeam();
     }, []);
 
-    if (isLoading) {
-        return <Loading fullScreen={true} text="Loading team information..." />;
-    }
 
     return (
+        <div>
+            <Navigation />
         <div className="p-6 max-w-4xl mx-auto">
+            
             <h1 className="text-3xl font-bold mb-6">About Our Team</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {team.map(member => (
@@ -45,6 +46,7 @@ export default function AboutUs() {
                     </div>
                 ))}
             </div>
+        </div>
         </div>
     );
 }
